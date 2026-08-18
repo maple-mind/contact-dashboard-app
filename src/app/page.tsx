@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { INQUIRY_STATUS_LABELS, PRIORITY_LABELS } from "@/lib/labels";
 
 export default async function Home() {
 	const inquiries = await prisma.inquiry.findMany({
@@ -29,8 +30,8 @@ export default async function Home() {
 						<tr key={inquiry.id} className="border-b">
 							<td className="p-2">{inquiry.title}</td>
 							<td className="p-2">{inquiry.customer.name}</td>
-							<td className="p-2">{inquiry.status}</td>
-							<td className="p-2">{inquiry.priority}</td>
+							<td className="p-2">{INQUIRY_STATUS_LABELS[inquiry.status]}</td>
+              <td className="p-2">{PRIORITY_LABELS[inquiry.priority]}</td>
 							<td className="p-2">{inquiry.assignee?.name ?? "未割当"}</td>
 							<td className="p-2">
 								{inquiry.createdAt.toLocaleDateString("ja-JP")}
