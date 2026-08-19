@@ -43,9 +43,13 @@ async function main() {
 	);
 
 	const customers = await Promise.all(
-		["株式会社アオイ", "みどり商事", "ハルカ工業", "株式会社ソラ", "北山システム"].map(
-			(name) => prisma.customer.create({ data: { name } }),
-		),
+		[
+			"株式会社アオイ",
+			"みどり商事",
+			"ハルカ工業",
+			"株式会社ソラ",
+			"北山システム",
+		].map((name) => prisma.customer.create({ data: { name } })),
 	);
 
 	const now = Date.now();
