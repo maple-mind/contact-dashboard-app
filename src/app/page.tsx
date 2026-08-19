@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { INQUIRY_STATUS_LABELS, PRIORITY_LABELS } from "@/lib/labels";
 import type { Prisma } from "@/generated/prisma/client";
 import { InquiryStatus } from "@/generated/prisma/enums";
+import { StatusFilter } from "@/components/status-filter";
 
 const STATUS_VALUES = Object.values(InquiryStatus);
 
@@ -31,7 +32,14 @@ export default async function Home({
 	return (
 		<main className="p-8">
 			<h1 className="mb-6 text-2xl font-bold">問い合わせ一覧</h1>
-			<p className="mb-4 text-sm text-gray-600">{inquiries.length}件</p>
+
+			<div className="mb-4">
+				<StatusFilter />
+			</div>
+
+			<p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
+				{inquiries.length}件
+			</p>
 
 			<table className="w-full border-collapse text-sm">
 				<thead>
