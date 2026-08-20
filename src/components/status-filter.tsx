@@ -18,6 +18,8 @@ export function StatusFilter() {
 			params.delete("status");
 		}
 
+		params.delete("page");
+
 		router.push(`/?${params.toString()}`);
 	}
 

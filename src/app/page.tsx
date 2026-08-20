@@ -4,12 +4,22 @@ import type { Prisma } from "@/generated/prisma/client";
 import { InquiryStatus } from "@/generated/prisma/enums";
 import { StatusFilter } from "@/components/status-filter";
 import { SearchInput } from "@/components/search-input";
+import { Pagination } from "@/components/pagination";
 
 const STATUS_VALUES = Object.values(InquiryStatus);
+
+const PER_PAGE = 20;
 
 function parseStatus(value: string | string[] | undefined) {
 	if (typeof value !== "string") return undefined;
 	return STATUS_VALUES.find((s) => s === value);
+}
+
+function parsePage(value: string | string[] | undefined) {
+	if (typeof value !== "string") return 1;
+	const parsed = Number(value);
+	if (!Number.isInteger(parsed) || parsed < 1) return 1;
+	return parsed;
 }
 
 export default async function Home({
@@ -20,6 +30,8 @@ export default async function Home({
 	const params = await searchParams;
 	const status = parseStatus(params.status);
 	const q = typeof params.q === "string" ? params.q.trim() : "";
+
+	const page = parsePage(params.page);
 
 	const where: Prisma.InquiryWhereInput = {
 		...(status ? { status } : {}),
@@ -33,11 +45,18 @@ export default async function Home({
 			: {}),
 	};
 
-	const inquiries = await prisma.inquiry.findMany({
-		where,
-		include: { customer: true, assignee: true },
-		orderBy: { createdAt: "desc" },
-	});
+	const [inquiries, total] = await Promise.all([
+		prisma.inquiry.findMany({
+			where,
+			include: { customer: true, assignee: true },
+			orderBy: { createdAt: "desc" },
+			skip: (page - 1) * PER_PAGE,
+			take: PER_PAGE,
+		}),
+		prisma.inquiry.count({ where }),
+	]);
+
+	const totalPages = Math.ceil(total / PER_PAGE);
 
 	return (
 		<main className="p-8">
@@ -48,8 +67,9 @@ export default async function Home({
 				<StatusFilter />
 			</div>
 
-			<p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
-				{inquiries.length}件
+			<p className="mb-4 text-sm">
+				{total}件中 {total === 0 ? 0 : (page - 1) * PER_PAGE + 1}〜
+				{Math.min(page * PER_PAGE, total)}件
 			</p>
 
 			<table className="w-full border-collapse text-sm">
@@ -78,6 +98,8 @@ export default async function Home({
 					))}
 				</tbody>
 			</table>
+
+			<Pagination page={page} totalPages={totalPages} />
 		</main>
 	);
 }

@@ -24,6 +24,8 @@ export function SearchInput() {
 				params.delete("q");
 			}
 
+			params.delete("page");
+
 			router.push(`/?${params.toString()}`);
 		}, 300);
 	}
