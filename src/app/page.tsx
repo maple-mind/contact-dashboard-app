@@ -3,6 +3,7 @@ import { INQUIRY_STATUS_LABELS, PRIORITY_LABELS } from "@/lib/labels";
 import type { Prisma } from "@/generated/prisma/client";
 import { InquiryStatus } from "@/generated/prisma/enums";
 import { StatusFilter } from "@/components/status-filter";
+import { SearchInput } from "@/components/search-input";
 
 const STATUS_VALUES = Object.values(InquiryStatus);
 
@@ -18,9 +19,18 @@ export default async function Home({
 }) {
 	const params = await searchParams;
 	const status = parseStatus(params.status);
+	const q = typeof params.q === "string" ? params.q.trim() : "";
 
 	const where: Prisma.InquiryWhereInput = {
 		...(status ? { status } : {}),
+		...(q
+			? {
+					OR: [
+						{ title: { contains: q, mode: "insensitive" } },
+						{ customer: { name: { contains: q, mode: "insensitive" } } },
+					],
+				}
+			: {}),
 	};
 
 	const inquiries = await prisma.inquiry.findMany({
@@ -33,7 +43,8 @@ export default async function Home({
 		<main className="p-8">
 			<h1 className="mb-6 text-2xl font-bold">問い合わせ一覧</h1>
 
-			<div className="mb-4">
+			<div className="mb-4 flex gap-4">
+				<SearchInput />
 				<StatusFilter />
 			</div>
 
