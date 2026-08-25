@@ -5,10 +5,14 @@ import { InquiryStatus } from "@/generated/prisma/enums";
 import { StatusFilter } from "@/components/status-filter";
 import { SearchInput } from "@/components/search-input";
 import { Pagination } from "@/components/pagination";
+import { SortHeader } from "@/components/sort-header";
 
 const STATUS_VALUES = Object.values(InquiryStatus);
 
 const PER_PAGE = 20;
+
+const SORTABLE_FIELDS = ["createdAt", "title", "status", "priority"] as const;
+type SortField = (typeof SORTABLE_FIELDS)[number];
 
 function parseStatus(value: string | string[] | undefined) {
 	if (typeof value !== "string") return undefined;
@@ -22,6 +26,15 @@ function parsePage(value: string | string[] | undefined) {
 	return parsed;
 }
 
+function parseSort(value: string | string[] | undefined): SortField {
+	if (typeof value !== "string") return "createdAt";
+	return SORTABLE_FIELDS.find((f) => f === value) ?? "createdAt";
+}
+
+function parseOrder(value: string | string[] | undefined): "asc" | "desc" {
+	return value === "asc" ? "asc" : "desc";
+}
+
 export default async function Home({
 	searchParams,
 }: {
@@ -32,6 +45,9 @@ export default async function Home({
 	const q = typeof params.q === "string" ? params.q.trim() : "";
 
 	const page = parsePage(params.page);
+
+	const sort = parseSort(params.sort);
+	const order = parseOrder(params.order);
 
 	const where: Prisma.InquiryWhereInput = {
 		...(status ? { status } : {}),
@@ -49,7 +65,7 @@ export default async function Home({
 		prisma.inquiry.findMany({
 			where,
 			include: { customer: true, assignee: true },
-			orderBy: { createdAt: "desc" },
+			orderBy: { [sort]: order },
 			skip: (page - 1) * PER_PAGE,
 			take: PER_PAGE,
 		}),
@@ -75,12 +91,12 @@ export default async function Home({
 			<table className="w-full border-collapse text-sm">
 				<thead>
 					<tr className="border-b">
-						<th className="p-2 text-left">件名</th>
+						<SortHeader field="title">件名</SortHeader>
 						<th className="p-2 text-left">顧客</th>
-						<th className="p-2 text-left">ステータス</th>
-						<th className="p-2 text-left">優先度</th>
+						<SortHeader field="status">ステータス</SortHeader>
+						<SortHeader field="priority">優先度</SortHeader>
 						<th className="p-2 text-left">担当者</th>
-						<th className="p-2 text-left">受信日時</th>
+						<SortHeader field="createdAt">受信日時</SortHeader>
 					</tr>
 				</thead>
 				<tbody>
