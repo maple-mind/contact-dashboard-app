@@ -98,7 +98,14 @@ export async function InquiryTable({
 				<TableBody>
 					{inquiries.map((inquiry) => (
 						<TableRow key={inquiry.id}>
-							<TableCell>{inquiry.title}</TableCell>
+							<TableCell>
+								<Link
+									href={`/inquiries/${inquiry.id}`}
+									className="hover:underline"
+								>
+									{inquiry.title}
+								</Link>
+							</TableCell>
 							<TableCell>{inquiry.customer.name}</TableCell>
 							<TableCell>
 								<Badge variant={INQUIRY_STATUS_VARIANTS[inquiry.status]}>
