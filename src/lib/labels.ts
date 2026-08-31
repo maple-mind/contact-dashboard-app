@@ -7,6 +7,16 @@ export const INQUIRY_STATUS_LABELS: Record<InquiryStatus, string> = {
 	CLOSED: "完了",
 };
 
+export const INQUIRY_STATUS_VARIANTS: Record<
+	InquiryStatus,
+	"default" | "secondary" | "destructive" | "outline"
+> = {
+	OPEN: "destructive",
+	IN_PROGRESS: "default",
+	PENDING: "secondary",
+	CLOSED: "outline",
+};
+
 export const PRIORITY_LABELS: Record<Priority, string> = {
 	LOW: "低",
 	MEDIUM: "中",

@@ -1,5 +1,4 @@
 import { prisma } from "@/lib/prisma";
-import { INQUIRY_STATUS_LABELS, PRIORITY_LABELS } from "@/lib/labels";
 import { SortHeader } from "@/components/sort-header";
 import { Pagination } from "@/components/pagination";
 import { EmptyState } from "@/components/empty-state";
@@ -14,6 +13,12 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import {
+	INQUIRY_STATUS_LABELS,
+	INQUIRY_STATUS_VARIANTS,
+	PRIORITY_LABELS,
+} from "@/lib/labels";
 
 const PER_PAGE = 20;
 
@@ -95,9 +100,25 @@ export async function InquiryTable({
 						<TableRow key={inquiry.id}>
 							<TableCell>{inquiry.title}</TableCell>
 							<TableCell>{inquiry.customer.name}</TableCell>
-							<TableCell>{INQUIRY_STATUS_LABELS[inquiry.status]}</TableCell>
-							<TableCell>{PRIORITY_LABELS[inquiry.priority]}</TableCell>
-							<TableCell>{inquiry.assignee?.name ?? "未割当"}</TableCell>
+							<TableCell>
+								<Badge variant={INQUIRY_STATUS_VARIANTS[inquiry.status]}>
+									{INQUIRY_STATUS_LABELS[inquiry.status]}
+								</Badge>
+							</TableCell>
+							<TableCell
+								className={
+									inquiry.priority === "HIGH"
+										? "text-destructive font-medium"
+										: ""
+								}
+							>
+								{PRIORITY_LABELS[inquiry.priority]}
+							</TableCell>
+							<TableCell>
+								{inquiry.assignee?.name ?? (
+									<span className="text-muted-foreground">未割当</span>
+								)}
+							</TableCell>
 							<TableCell>
 								{inquiry.createdAt.toLocaleDateString("ja-JP")}
 							</TableCell>
