@@ -3,44 +3,53 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { InquiryStatus } from "@/generated/prisma/enums";
 import { INQUIRY_STATUS_LABELS } from "@/lib/labels";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+
+const ALL = "__all__";
 
 export function StatusFilter() {
 	const router = useRouter();
 	const searchParams = useSearchParams();
-	const current = searchParams.get("status") ?? "";
+	const current = searchParams.get("status") || ALL;
+	const label = INQUIRY_STATUS_LABELS[current as InquiryStatus] ?? "すべて";
 
-	function handleChange(event: React.ChangeEvent<HTMLSelectElement>) {
+	function handleChange(value: string | null) {
 		const params = new URLSearchParams(searchParams);
 
-		if (event.target.value) {
-			params.set("status", event.target.value);
-		} else {
+		if (!value || value === ALL) {
 			params.delete("status");
+		} else {
+			params.set("status", value);
 		}
 
 		params.delete("page");
-
 		router.push(`/?${params.toString()}`);
 	}
 
 	return (
-		<div>
-			<label htmlFor="status-filter" className="mr-2 text-sm">
+		<div className="flex items-center gap-2">
+			<label htmlFor="status-filter" className="text-sm">
 				ステータス
 			</label>
-			<select
-				id="status-filter"
-				value={current}
-				onChange={handleChange}
-				className="rounded border border-gray-300 bg-white px-2 py-1 text-sm dark:border-gray-600 dark:bg-gray-800"
-			>
-				<option value="">すべて</option>
-				{Object.values(InquiryStatus).map((status) => (
-					<option key={status} value={status}>
-						{INQUIRY_STATUS_LABELS[status]}
-					</option>
-				))}
-			</select>
+			<Select value={current} onValueChange={handleChange}>
+				<SelectTrigger id="status-filter" className="w-36">
+					{label}
+				</SelectTrigger>
+				<SelectContent>
+					<SelectItem value={ALL}>すべて</SelectItem>
+					{Object.values(InquiryStatus).map((status) => (
+						<SelectItem key={status} value={status}>
+							{INQUIRY_STATUS_LABELS[status]}
+						</SelectItem>
+					))}
+				</SelectContent>
+			</Select>
 		</div>
 	);
 }

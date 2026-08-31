@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useRef } from "react";
+import { Input } from "@/components/ui/input";
 
 export function SearchInput() {
 	const router = useRouter();
@@ -31,17 +32,17 @@ export function SearchInput() {
 	}
 
 	return (
-		<div>
-			<label htmlFor="search" className="mr-2 text-sm">
+		<div className="flex items-center gap-2">
+			<label htmlFor="search" className="text-sm">
 				検索
 			</label>
-			<input
+			<Input
 				id="search"
 				type="search"
 				defaultValue={searchParams.get("q") ?? ""}
 				onChange={handleChange}
 				placeholder="件名・顧客名"
-				className="rounded border px-2 py-1 text-sm"
+				className="w-56"
 			/>
 		</div>
 	);

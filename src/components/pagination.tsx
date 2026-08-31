@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
+import { Button } from "@/components/ui/button";
 
 export function Pagination({
 	page,
@@ -22,25 +23,25 @@ export function Pagination({
 
 	return (
 		<div className="mt-4 flex items-center justify-center gap-4">
-			<button
-				type="button"
+			<Button
+				variant="outline"
+				size="sm"
 				onClick={() => goTo(page - 1)}
 				disabled={page <= 1}
-				className="rounded border px-3 py-1 text-sm disabled:opacity-40"
 			>
 				前へ
-			</button>
+			</Button>
 			<span className="text-sm">
 				{page} / {totalPages}
 			</span>
-			<button
-				type="button"
+			<Button
+				variant="outline"
+				size="sm"
 				onClick={() => goTo(page + 1)}
 				disabled={page >= totalPages}
-				className="rounded border px-3 py-1 text-sm disabled:opacity-40"
 			>
 				次へ
-			</button>
+			</Button>
 		</div>
 	);
 }
