@@ -1,6 +1,8 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
+import { ChevronDown, ChevronUp } from "lucide-react";
+import { TableHead } from "./ui/table";
 
 export function SortHeader({
 	field,
@@ -25,7 +27,7 @@ export function SortHeader({
 	}
 
 	return (
-		<th
+		<TableHead
 			aria-sort={
 				isActive
 					? currentOrder === "desc"
@@ -38,15 +40,16 @@ export function SortHeader({
 			<button
 				type="button"
 				onClick={handleClick}
-				className="flex items-center gap-1 font-medium hover:underline"
+				className="flex items-center gap-1 hover:underline"
 			>
 				{children}
-				{isActive && (
-					<span aria-hidden="true" className="text-xs leading-none">
-						{currentOrder === "desc" ? "↓" : "↑"}
-					</span>
-				)}
+				{isActive &&
+					(currentOrder === "desc" ? (
+						<ChevronDown className="size-3.5" />
+					) : (
+						<ChevronUp className="size-3.5" />
+					))}
 			</button>
-		</th>
+		</TableHead>
 	);
 }

@@ -6,6 +6,14 @@ import { EmptyState } from "@/components/empty-state";
 import Link from "next/link";
 import type { Prisma } from "@/generated/prisma/client";
 import type { InquiryStatus } from "@/generated/prisma/enums";
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "@/components/ui/table";
 
 const PER_PAGE = 20;
 
@@ -71,32 +79,32 @@ export async function InquiryTable({
 				{Math.min(page * PER_PAGE, total)}件
 			</p>
 
-			<table className="w-full border-collapse text-sm">
-				<thead>
-					<tr className="border-b">
+			<Table>
+				<TableHeader>
+					<TableRow>
 						<SortHeader field="title">件名</SortHeader>
-						<th className="p-2 text-left">顧客</th>
+						<TableHead>顧客</TableHead>
 						<SortHeader field="status">ステータス</SortHeader>
 						<SortHeader field="priority">優先度</SortHeader>
-						<th className="p-2 text-left">担当者</th>
+						<TableHead>担当者</TableHead>
 						<SortHeader field="createdAt">受信日時</SortHeader>
-					</tr>
-				</thead>
-				<tbody>
+					</TableRow>
+				</TableHeader>
+				<TableBody>
 					{inquiries.map((inquiry) => (
-						<tr key={inquiry.id} className="border-b">
-							<td className="p-2">{inquiry.title}</td>
-							<td className="p-2">{inquiry.customer.name}</td>
-							<td className="p-2">{INQUIRY_STATUS_LABELS[inquiry.status]}</td>
-							<td className="p-2">{PRIORITY_LABELS[inquiry.priority]}</td>
-							<td className="p-2">{inquiry.assignee?.name ?? "未割当"}</td>
-							<td className="p-2">
+						<TableRow key={inquiry.id}>
+							<TableCell>{inquiry.title}</TableCell>
+							<TableCell>{inquiry.customer.name}</TableCell>
+							<TableCell>{INQUIRY_STATUS_LABELS[inquiry.status]}</TableCell>
+							<TableCell>{PRIORITY_LABELS[inquiry.priority]}</TableCell>
+							<TableCell>{inquiry.assignee?.name ?? "未割当"}</TableCell>
+							<TableCell>
 								{inquiry.createdAt.toLocaleDateString("ja-JP")}
-							</td>
-						</tr>
+							</TableCell>
+						</TableRow>
 					))}
-				</tbody>
-			</table>
+				</TableBody>
+			</Table>
 
 			<Pagination page={page} totalPages={totalPages} />
 		</>
