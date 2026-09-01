@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useOptimistic, useState, useTransition } from "react";
 import { updateInquiryAssignee } from "@/app/actions/inquiry";
 import {
 	Select,
@@ -20,12 +20,14 @@ export function AssigneeChanger({
 	currentAssigneeId: string | null;
 	users: { id: string; name: string }[];
 }) {
-	const [isPending, startTransition] = useTransition();
+	const [, startTransition] = useTransition();
 	const [error, setError] = useState<string | null>(null);
+	const [optimisticAssigneeId, setOptimisticAssigneeId] =
+		useOptimistic(currentAssigneeId);
 
-	const current = currentAssigneeId ?? UNASSIGNED;
+	const current = optimisticAssigneeId ?? UNASSIGNED;
 	const currentName =
-		users.find((u) => u.id === currentAssigneeId)?.name ?? "未割当";
+		users.find((u) => u.id === optimisticAssigneeId)?.name ?? "未割当";
 
 	function handleChange(value: string | null) {
 		if (!value) return;
@@ -33,10 +35,10 @@ export function AssigneeChanger({
 		setError(null);
 
 		startTransition(async () => {
-			const result = await updateInquiryAssignee(
-				inquiryId,
-				value === UNASSIGNED ? null : value,
-			);
+			const next = value === UNASSIGNED ? null : value;
+			setOptimisticAssigneeId(next);
+
+			const result = await updateInquiryAssignee(inquiryId, next);
 
 			if (!result.ok) {
 				setError(result.message);
@@ -46,7 +48,7 @@ export function AssigneeChanger({
 
 	return (
 		<div>
-			<Select value={current} onValueChange={handleChange} disabled={isPending}>
+			<Select value={current} onValueChange={handleChange}>
 				<SelectTrigger className="w-full">{currentName}</SelectTrigger>
 				<SelectContent>
 					<SelectItem value={UNASSIGNED}>未割当</SelectItem>
