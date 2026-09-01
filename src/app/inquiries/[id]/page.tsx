@@ -7,6 +7,7 @@ import {
 	PRIORITY_LABELS,
 } from "@/lib/labels";
 import { StatusChanger } from "@/components/status-changer";
+import { AssigneeChanger } from "@/components/assignee-changer";
 
 export default async function InquiryDetailPage({
 	params,
@@ -15,10 +16,16 @@ export default async function InquiryDetailPage({
 }) {
 	const { id } = await params;
 
-	const inquiry = await prisma.inquiry.findUnique({
-		where: { id },
-		include: { customer: true, assignee: true },
-	});
+	const [inquiry, users] = await Promise.all([
+		prisma.inquiry.findUnique({
+			where: { id },
+			include: { customer: true, assignee: true },
+		}),
+		prisma.user.findMany({
+			select: { id: true, name: true },
+			orderBy: { name: "asc" },
+		}),
+	]);
 
 	if (!inquiry) {
 		notFound();
@@ -58,9 +65,11 @@ export default async function InquiryDetailPage({
 
 						<dt className="text-muted-foreground">担当者</dt>
 						<dd>
-							{inquiry.assignee?.name ?? (
-								<span className="text-muted-foreground">未割当</span>
-							)}
+							<AssigneeChanger
+								inquiryId={inquiry.id}
+								currentAssigneeId={inquiry.assigneeId}
+								users={users}
+							/>
 						</dd>
 
 						<dt className="text-muted-foreground">受信日時</dt>
