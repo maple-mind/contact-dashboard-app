@@ -44,7 +44,7 @@ export default async function Home({
 	const order = parseOrder(params.order);
 
 	return (
-		<main className="p-8">
+		<main className="mx-auto w-full max-w-[1200px] p-8">
 			<h1 className="mb-6 text-2xl font-bold">問い合わせ一覧</h1>
 
 			<div className="mb-4 flex gap-4">

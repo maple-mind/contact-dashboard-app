@@ -6,7 +6,7 @@ import {
 	INQUIRY_STATUS_VARIANTS,
 	PRIORITY_LABELS,
 } from "@/lib/labels";
-import { Badge } from "@/components/ui/badge";
+import { StatusChanger } from "@/components/status-changer";
 
 export default async function InquiryDetailPage({
 	params,
@@ -47,9 +47,10 @@ export default async function InquiryDetailPage({
 
 						<dt className="text-muted-foreground">ステータス</dt>
 						<dd>
-							<Badge variant={INQUIRY_STATUS_VARIANTS[inquiry.status]}>
-								{INQUIRY_STATUS_LABELS[inquiry.status]}
-							</Badge>
+							<StatusChanger
+								inquiryId={inquiry.id}
+								currentStatus={inquiry.status}
+							/>
 						</dd>
 
 						<dt className="text-muted-foreground">優先度</dt>
