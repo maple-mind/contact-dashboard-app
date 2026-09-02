@@ -28,6 +28,7 @@ function pick<T>(items: readonly T[]): T {
 }
 
 async function main() {
+	await prisma.comment.deleteMany();
 	await prisma.inquiry.deleteMany();
 	await prisma.customer.deleteMany();
 	await prisma.user.deleteMany();
@@ -57,7 +58,7 @@ async function main() {
 	for (let i = 0; i < 50; i++) {
 		const assignee = Math.random() < 0.2 ? null : pick(users);
 
-		await prisma.inquiry.create({
+		const inquiry = await prisma.inquiry.create({
 			data: {
 				title: pick(TITLES),
 				body: `発生日時: 昨日の午後\n影響範囲: 一部のユーザー\n\nご確認をお願いいたします。`,
@@ -68,6 +69,16 @@ async function main() {
 				assigneeId: assignee?.id ?? null,
 			},
 		});
+
+		if (Math.random() < 0.5) {
+			await prisma.comment.create({
+				data: {
+					body: "確認しました。担当部署に確認を依頼しています。",
+					inquiryId: inquiry.id,
+					authorId: pick(users).id,
+				},
+			});
+		}
 	}
 
 	console.log("シードデータを投入しました");

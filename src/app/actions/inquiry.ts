@@ -73,3 +73,48 @@ export async function updateInquiryAssignee(
 
 	return { ok: true };
 }
+
+export async function createComment(
+	inquiryId: string,
+	body: string,
+): Promise<ActionResult> {
+	const trimmed = body.trim();
+
+	if (!trimmed) {
+		return { ok: false, message: "コメントを入力してください" };
+	}
+
+	if (trimmed.length > 2000) {
+		return { ok: false, message: "コメントは2000文字以内で入力してください" };
+	}
+
+	const inquiry = await prisma.inquiry.findUnique({
+		where: { id: inquiryId },
+		select: { id: true },
+	});
+
+	if (!inquiry) {
+		return { ok: false, message: "問い合わせが見つかりません" };
+	}
+
+	// TODO: 認証導入後、セッションから取得する
+	const author = await prisma.user.findFirst({
+		select: { id: true },
+	});
+
+	if (!author) {
+		return { ok: false, message: "投稿者が見つかりません" };
+	}
+
+	await prisma.comment.create({
+		data: {
+			body: trimmed,
+			inquiryId,
+			authorId: author.id,
+		},
+	});
+
+	revalidatePath(`/inquiries/${inquiryId}`);
+
+	return { ok: true };
+}
