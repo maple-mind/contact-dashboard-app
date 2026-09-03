@@ -4,6 +4,8 @@ import { StatusFilter } from "@/components/status-filter";
 import { SearchInput } from "@/components/search-input";
 import { InquiryTable } from "@/components/inquiry-table";
 import { TableSkeleton } from "@/components/table-skeleton";
+import { requireSession } from "@/lib/session";
+import { SignOutButton } from "@/components/sign-out-button";
 
 const STATUS_VALUES = Object.values(InquiryStatus);
 
@@ -36,6 +38,8 @@ export default async function Home({
 }: {
 	searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
+	const session = await requireSession();
+
 	const params = await searchParams;
 	const status = parseStatus(params.status);
 	const q = typeof params.q === "string" ? params.q.trim() : "";
@@ -45,7 +49,15 @@ export default async function Home({
 
 	return (
 		<main className="mx-auto w-full max-w-[1200px] p-8">
-			<h1 className="mb-6 text-2xl font-bold">問い合わせ一覧</h1>
+			<div className="mb-6 flex items-center justify-between">
+				<h1 className="text-2xl font-bold">問い合わせ一覧</h1>
+				<div className="flex items-center gap-3">
+					<span className="text-muted-foreground text-sm">
+						{session.user.name}
+					</span>
+					<SignOutButton />
+				</div>
+			</div>
 
 			<div className="mb-4 flex gap-4">
 				<SearchInput />

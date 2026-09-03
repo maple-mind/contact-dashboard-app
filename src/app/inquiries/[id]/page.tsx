@@ -9,12 +9,15 @@ import {
 import { StatusChanger } from "@/components/status-changer";
 import { AssigneeChanger } from "@/components/assignee-changer";
 import { CommentForm } from "@/components/comment-form";
+import { requireSession } from "@/lib/session";
 
 export default async function InquiryDetailPage({
 	params,
 }: {
 	params: Promise<{ id: string }>;
 }) {
+	await requireSession();
+
 	const { id } = await params;
 
 	const [inquiry, users] = await Promise.all([
