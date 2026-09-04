@@ -25,12 +25,14 @@ export async function InquiryTable({
 	page,
 	sort,
 	order,
+	isAdmin,
 }: {
 	status: InquiryStatus | undefined;
 	q: string;
 	page: number;
 	sort: string;
 	order: "asc" | "desc";
+	isAdmin: boolean;
 }) {
 	const { inquiries, total, totalPages, perPage } = await getInquiries({
 		status,
@@ -44,7 +46,7 @@ export async function InquiryTable({
 	const isOutOfRange = total > 0 && page > totalPages;
 
 	if (total === 0) {
-		return <EmptyState hasFilter={hasFilter} />;
+		return <EmptyState hasFilter={hasFilter} isAdmin={isAdmin} />;
 	}
 
 	if (isOutOfRange) {

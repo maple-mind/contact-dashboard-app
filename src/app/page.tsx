@@ -1,11 +1,12 @@
 import { Suspense } from "react";
-import { InquiryStatus } from "@/generated/prisma/enums";
+import { InquiryStatus, type Role } from "@/generated/prisma/enums";
 import { StatusFilter } from "@/components/status-filter";
 import { SearchInput } from "@/components/search-input";
 import { InquiryTable } from "@/components/inquiry-table";
 import { TableSkeleton } from "@/components/table-skeleton";
 import { requireSession } from "@/lib/session";
 import { SignOutButton } from "@/components/sign-out-button";
+import { ROLE_LABELS } from "@/lib/labels";
 
 const STATUS_VALUES = Object.values(InquiryStatus);
 
@@ -50,10 +51,17 @@ export default async function Home({
 	return (
 		<main className="mx-auto w-full max-w-[1200px] p-8">
 			<div className="mb-6 flex items-center justify-between">
-				<h1 className="text-2xl font-bold">問い合わせ一覧</h1>
+				<div>
+					<h1 className="text-2xl font-bold">問い合わせ一覧</h1>
+					{session.user.role !== "ADMIN" && (
+						<p className="text-muted-foreground mt-1 text-sm">
+							自分が担当している問い合わせのみ表示しています
+						</p>
+					)}
+				</div>
 				<div className="flex items-center gap-3">
 					<span className="text-muted-foreground text-sm">
-						{session.user.name}
+						{session.user.name}（{ROLE_LABELS[session.user.role as Role]}）
 					</span>
 					<SignOutButton />
 				</div>
@@ -65,7 +73,7 @@ export default async function Home({
 			</div>
 
 			<Suspense
-				key={`${status}-${q}-${page}-${sort}-${order}`}
+				key={`${status}-${q}-${page}-${sort}-${order}-${session.user.role}`}
 				fallback={<TableSkeleton />}
 			>
 				<InquiryTable
@@ -74,6 +82,7 @@ export default async function Home({
 					page={page}
 					sort={sort}
 					order={order}
+					isAdmin={session.user.role === "ADMIN"}
 				/>
 			</Suspense>
 		</main>

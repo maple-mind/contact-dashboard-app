@@ -1,6 +1,12 @@
 import Link from "next/link";
 
-export function EmptyState({ hasFilter }: { hasFilter: boolean }) {
+export function EmptyState({
+	hasFilter,
+	isAdmin,
+}: {
+	hasFilter: boolean;
+	isAdmin: boolean;
+}) {
 	return (
 		<div className="rounded border border-dashed p-12 text-center">
 			{hasFilter ? (
@@ -15,11 +21,18 @@ export function EmptyState({ hasFilter }: { hasFilter: boolean }) {
 						条件をクリア
 					</Link>
 				</>
-			) : (
+			) : isAdmin ? (
 				<>
 					<p className="mb-2 font-medium">まだ問い合わせがありません</p>
 					<p className="text-muted-foreground text-sm">
 						新しい問い合わせが届くとここに表示されます
+					</p>
+				</>
+			) : (
+				<>
+					<p className="mb-2 font-medium">担当している問い合わせはありません</p>
+					<p className="text-muted-foreground text-sm">
+						担当者として割り当てられると、ここに表示されます
 					</p>
 				</>
 			)}
