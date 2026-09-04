@@ -9,29 +9,17 @@ import {
 import { StatusChanger } from "@/components/status-changer";
 import { AssigneeChanger } from "@/components/assignee-changer";
 import { CommentForm } from "@/components/comment-form";
-import { requireSession } from "@/lib/session";
+import { getInquiryById } from "@/data/inquiry";
 
 export default async function InquiryDetailPage({
 	params,
 }: {
 	params: Promise<{ id: string }>;
 }) {
-	await requireSession();
-
 	const { id } = await params;
 
 	const [inquiry, users] = await Promise.all([
-		prisma.inquiry.findUnique({
-			where: { id },
-			include: {
-				customer: true,
-				assignee: true,
-				comments: {
-					include: { author: true },
-					orderBy: { createdAt: "asc" },
-				},
-			},
-		}),
+		getInquiryById(id),
 		prisma.user.findMany({
 			select: { id: true, name: true },
 			orderBy: { name: "asc" },

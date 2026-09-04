@@ -1,10 +1,9 @@
-import { prisma } from "@/lib/prisma";
 import { SortHeader } from "@/components/sort-header";
 import { Pagination } from "@/components/pagination";
 import { EmptyState } from "@/components/empty-state";
 import Link from "next/link";
-import type { Prisma } from "@/generated/prisma/client";
 import type { InquiryStatus } from "@/generated/prisma/enums";
+import { getInquiries } from "@/data/inquiry";
 import {
 	Table,
 	TableBody,
@@ -20,8 +19,6 @@ import {
 	PRIORITY_LABELS,
 } from "@/lib/labels";
 
-const PER_PAGE = 20;
-
 export async function InquiryTable({
 	status,
 	q,
@@ -35,30 +32,14 @@ export async function InquiryTable({
 	sort: string;
 	order: "asc" | "desc";
 }) {
-	const where: Prisma.InquiryWhereInput = {
-		...(status ? { status } : {}),
-		...(q
-			? {
-					OR: [
-						{ title: { contains: q, mode: "insensitive" } },
-						{ customer: { name: { contains: q, mode: "insensitive" } } },
-					],
-				}
-			: {}),
-	};
+	const { inquiries, total, totalPages, perPage } = await getInquiries({
+		status,
+		q,
+		page,
+		sort,
+		order,
+	});
 
-	const [inquiries, total] = await Promise.all([
-		prisma.inquiry.findMany({
-			where,
-			include: { customer: true, assignee: true },
-			orderBy: { [sort]: order },
-			skip: (page - 1) * PER_PAGE,
-			take: PER_PAGE,
-		}),
-		prisma.inquiry.count({ where }),
-	]);
-
-	const totalPages = Math.ceil(total / PER_PAGE);
 	const hasFilter = Boolean(status || q);
 	const isOutOfRange = total > 0 && page > totalPages;
 
@@ -80,8 +61,8 @@ export async function InquiryTable({
 	return (
 		<>
 			<p className="mb-4 text-sm">
-				{total}件中 {(page - 1) * PER_PAGE + 1}〜
-				{Math.min(page * PER_PAGE, total)}件
+				{total}件中 {(page - 1) * perPage + 1}〜
+				{Math.min(page * perPage, total)}件
 			</p>
 
 			<Table>
