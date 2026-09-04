@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
 import {
 	INQUIRY_STATUS_LABELS,
 	INQUIRY_STATUS_VARIANTS,
@@ -9,7 +8,7 @@ import {
 import { StatusChanger } from "@/components/status-changer";
 import { AssigneeChanger } from "@/components/assignee-changer";
 import { CommentForm } from "@/components/comment-form";
-import { getInquiryById } from "@/data/inquiry";
+import { getInquiryById, getAssignableUsers } from "@/data/inquiry";
 
 export default async function InquiryDetailPage({
 	params,
@@ -20,10 +19,7 @@ export default async function InquiryDetailPage({
 
 	const [inquiry, users] = await Promise.all([
 		getInquiryById(id),
-		prisma.user.findMany({
-			select: { id: true, name: true },
-			orderBy: { name: "asc" },
-		}),
+		getAssignableUsers(),
 	]);
 
 	if (!inquiry) {

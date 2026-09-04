@@ -1,11 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { prisma } from "@/lib/prisma";
 import { InquiryStatus } from "@/generated/prisma/enums";
-import { canTransition } from "@/lib/inquiry-status";
-
-type ActionResult = { ok: true } | { ok: false; message: string };
+import * as inquiryData from "@/data/inquiry";
+import type { ActionResult } from "@/lib/types";
 
 export async function updateInquiryStatus(
 	inquiryId: string,
@@ -15,63 +13,31 @@ export async function updateInquiryStatus(
 		return { ok: false, message: "不正なステータスです" };
 	}
 
-	const inquiry = await prisma.inquiry.findUnique({
-		where: { id: inquiryId },
-		select: { status: true },
-	});
+	const result = await inquiryData.updateStatus(
+		inquiryId,
+		nextStatus as InquiryStatus,
+	);
 
-	if (!inquiry) {
-		return { ok: false, message: "問い合わせが見つかりません" };
+	if (result.ok) {
+		revalidatePath(`/inquiries/${inquiryId}`);
+		revalidatePath("/");
 	}
 
-	if (!canTransition(inquiry.status, nextStatus as InquiryStatus)) {
-		return { ok: false, message: "このステータスには変更できません" };
-	}
-
-	await prisma.inquiry.update({
-		where: { id: inquiryId },
-		data: { status: nextStatus as InquiryStatus },
-	});
-
-	revalidatePath(`/inquiries/${inquiryId}`);
-	revalidatePath("/");
-
-	return { ok: true };
+	return result;
 }
 
 export async function updateInquiryAssignee(
 	inquiryId: string,
 	assigneeId: string | null,
 ): Promise<ActionResult> {
-	if (assigneeId !== null) {
-		const user = await prisma.user.findUnique({
-			where: { id: assigneeId },
-			select: { id: true },
-		});
+	const result = await inquiryData.updateAssignee(inquiryId, assigneeId);
 
-		if (!user) {
-			return { ok: false, message: "担当者が見つかりません" };
-		}
+	if (result.ok) {
+		revalidatePath(`/inquiries/${inquiryId}`);
+		revalidatePath("/");
 	}
 
-	const inquiry = await prisma.inquiry.findUnique({
-		where: { id: inquiryId },
-		select: { id: true },
-	});
-
-	if (!inquiry) {
-		return { ok: false, message: "問い合わせが見つかりません" };
-	}
-
-	await prisma.inquiry.update({
-		where: { id: inquiryId },
-		data: { assigneeId },
-	});
-
-	revalidatePath(`/inquiries/${inquiryId}`);
-	revalidatePath("/");
-
-	return { ok: true };
+	return result;
 }
 
 export async function createComment(
@@ -88,33 +54,11 @@ export async function createComment(
 		return { ok: false, message: "コメントは2000文字以内で入力してください" };
 	}
 
-	const inquiry = await prisma.inquiry.findUnique({
-		where: { id: inquiryId },
-		select: { id: true },
-	});
+	const result = await inquiryData.addComment(inquiryId, trimmed);
 
-	if (!inquiry) {
-		return { ok: false, message: "問い合わせが見つかりません" };
+	if (result.ok) {
+		revalidatePath(`/inquiries/${inquiryId}`);
 	}
 
-	// TODO: 認証導入後、セッションから取得する
-	const author = await prisma.user.findFirst({
-		select: { id: true },
-	});
-
-	if (!author) {
-		return { ok: false, message: "投稿者が見つかりません" };
-	}
-
-	await prisma.comment.create({
-		data: {
-			body: trimmed,
-			inquiryId,
-			authorId: author.id,
-		},
-	});
-
-	revalidatePath(`/inquiries/${inquiryId}`);
-
-	return { ok: true };
+	return result;
 }
