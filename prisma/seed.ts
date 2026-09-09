@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { PrismaNeon } from "@prisma/adapter-neon";
-import { PrismaClient, type Prisma } from "../src/generated/prisma/client";
+import { PrismaClient } from "../src/generated/prisma/client";
+import { auth } from "../src/lib/auth";
 
 const adapter = new PrismaNeon({
 	connectionString: process.env.DIRECT_URL,
@@ -27,21 +28,59 @@ function pick<T>(items: readonly T[]): T {
 	return items[Math.floor(Math.random() * items.length)];
 }
 
+const DEMO_USERS = [
+	{
+		name: "佐藤 健一",
+		email: "admin@example.com",
+		password: "demo1234",
+		role: "ADMIN" as const,
+	},
+	{
+		name: "田中 美咲",
+		email: "member@example.com",
+		password: "demo1234",
+		role: "MEMBER" as const,
+	},
+	{
+		name: "鈴木 陽介",
+		email: "suzuki@example.com",
+		password: "demo1234",
+		role: "MEMBER" as const,
+	},
+];
+
+async function createUsers() {
+	const users = [];
+
+	for (const data of DEMO_USERS) {
+		await auth.api.signUpEmail({
+			body: {
+				name: data.name,
+				email: data.email,
+				password: data.password,
+			},
+		});
+
+		const user = await prisma.user.update({
+			where: { email: data.email },
+			data: { role: data.role },
+		});
+
+		users.push(user);
+	}
+
+	return users;
+}
+
 async function main() {
 	await prisma.comment.deleteMany();
 	await prisma.inquiry.deleteMany();
 	await prisma.customer.deleteMany();
+	await prisma.session.deleteMany();
+	await prisma.account.deleteMany();
 	await prisma.user.deleteMany();
 
-	const USERS = [
-		{ name: "佐藤 健一", email: "sato@example.com", role: "MEMBER" },
-		{ name: "田中 美咲", email: "tanaka@example.com", role: "ADMIN" },
-		{ name: "鈴木 陽介", email: "suzuki@example.com", role: "MEMBER" },
-	] as const;
-
-	const users = await Promise.all(
-		USERS.map((data) => prisma.user.create({ data })),
-	);
+	const users = await createUsers();
 
 	const customers = await Promise.all(
 		[
@@ -56,7 +95,8 @@ async function main() {
 	const now = Date.now();
 
 	for (let i = 0; i < 50; i++) {
-		const assignee = Math.random() < 0.2 ? null : pick(users);
+		const assignee =
+			i < 10 ? users[1] : Math.random() < 0.2 ? null : pick(users);
 
 		const inquiry = await prisma.inquiry.create({
 			data: {
