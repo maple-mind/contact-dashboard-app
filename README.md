@@ -1,36 +1,141 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 問い合わせ管理ダッシュボード
 
-## Getting Started
+問い合わせ管理の社内向け管理画面です。
 
-First, run the development server:
+## デモ
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+**URL**: https://contact-dashboard-app-neon.vercel.app
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+| ロール | メールアドレス     | パスワード |
+| ------ | ------------------ | ---------- |
+| 管理者 | admin@example.com  | demo1234   |
+| 担当者 | member@example.com | demo1234   |
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+管理者は全件を閲覧・操作できます。担当者は自分が担当する問い合わせのみ表示されます。
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 概要
 
-## Learn More
+BtoB SaaS のカスタマーサポート業務を想定した管理画面です。
 
-To learn more about Next.js, take a look at the following resources:
+単純な CRUD ではなく、以下を含む構造を実装することを目的に題材を選びました。
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- ステータス遷移にドメインルールがある（完了から未対応には戻せない、など）
+- ロールによって閲覧範囲と操作範囲が変わる
+- 件数が増える前提で、検索・絞り込み・ソートをすべてサーバーサイドで処理する
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+実務の管理画面で必要になる判断を、実装を通して検討しています。
 
-## Deploy on Vercel
+## 技術スタック
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+| 分類           | 使用技術                                          |
+| -------------- | ------------------------------------------------- |
+| フレームワーク | Next.js 16（App Router）                          |
+| 言語           | TypeScript 5                                      |
+| UI             | React 19 / Tailwind CSS v4 / shadcn/ui（Base UI） |
+| ORM            | Prisma 7                                          |
+| データベース   | Neon（PostgreSQL）                                |
+| 認証           | Better Auth 1.7                                   |
+| ホスティング   | Vercel                                            |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 主な機能
+
+- 問い合わせの一覧表示（検索・絞り込み・ソート・ページネーション）
+- 問い合わせの詳細表示
+- ステータスの変更（遷移ルールあり）
+- 担当者の割り当て
+- 対応履歴の記録
+- メール/パスワードによる認証
+- ロールによる権限制御
+
+## 画面
+
+<!-- スクリーンショットを2〜3枚。一覧と詳細 -->
+
+## 設計判断
+
+### 検索・絞り込みの状態を URL に持たせた
+
+一覧の検索・絞り込み・ソート・ページ番号は、すべて `searchParams` を単一の状態源としている。
+コンポーネント側は状態を持たず、URL を読んで表示するだけの構造にした。
+
+管理画面では以下が実際の業務要件になるため。
+
+- 絞り込んだ結果の URL をそのまま共有できる
+- ブラウザバックで前の絞り込み状態に戻れる
+- リロードしても条件が消えない
+
+`useState` で持つとこれらが全部失われる。加えて、状態がサーバーに届くため
+Server Component 内で直接クエリの条件として使える。
+
+**踏んだ問題**
+
+検索・絞り込み時にページ番号をリセットする処理が必要だった。
+3ページ目で検索すると `?q=xxx&page=3` になり、ヒットが2件でも3ページ目は空になる。
+ユーザーからは「検索したのに何も出ない」ように見える。
+
+**例外**
+
+検索入力欄だけは `defaultValue` を使い、React 側で入力値を保持していない。
+1文字ごとに URL を更新するとリクエストが飛びすぎるため、
+300ms のデバウンスを挟んでから URL に反映している。
+
+当初は `useEffect` で実装したが、依存配列に `searchParams` を含めた結果、
+`router.push` が `searchParams` を変更して `useEffect` が再発火する無限ループになった。
+入力ハンドラ内で `setTimeout` を直接管理する形に変更している。
+
+### 権限チェックを Data Access Layer に集約した
+
+認証・権限の確認は `src/data/` 配下のデータアクセス関数の中で行っている。
+middleware では行っていない。
+
+2025年3月に公開された CVE-2025-29927 により、
+`x-middleware-subrequest` ヘッダーの偽装で middleware を迂回できることが示された。
+Next.js 側で修正済みだが、middleware は構造的に「最初の防波堤」でしかない。
+
+実際にデータを取得する関数の中で確認すれば、
+どの経路から呼ばれても権限チェックが必ず走る。
+Server Actions は公開エンドポイントと同等に扱う必要があるため、
+クライアント側の制限だけに依存しない構造にしている。
+
+**権限がない場合は 404 を返す**
+
+他人が担当する問い合わせの詳細 URL を直接開いた場合、403 ではなく 404 になる。
+「存在するが権限がない」と分かると、ID を変えながら試すことで
+他の問い合わせの存在を推測できるため。
+データ取得関数は「存在しない場合」と「権限がない場合」の両方で `null` を返し、
+呼び出し側から区別できないようにしている。
+
+**ロールはクライアントから設定できない**
+
+Better Auth の `additionalFields` で `role` に `input: false` を指定している。
+これがないと、サインアップのリクエストに `role: "ADMIN"` を含めるだけで
+管理者アカウントを作成できてしまう。
+ロールの変更はサーバー側の経路に限定している。
+
+### ステータス遷移ルールを検討して1つに絞った
+
+問い合わせのステータス遷移には制約を設けているが、
+最終的に禁止しているのは「OPEN への巻き戻し」のみ。
+
+当初は `OPEN → IN_PROGRESS → CLOSED` の直線的な遷移だけを許可していた。
+しかし実際のサポート業務を検討すると、以下が発生する。
+
+- 即答できる問い合わせを、対応中を経由せず完了にする
+- クローズ後に「解決していない」と返信が来て再オープンする
+- 再オープン後、他部署の対応待ちで保留にする
+
+これらを禁止すると、実務では中間ステータスを一瞬経由するだけの
+無意味な操作を強いることになるため、制約を外した。
+
+**OPEN への巻き戻しだけを禁止した理由**
+
+OPEN は「まだ誰も対応していない」という意味を持つ。
+ここに戻せると未対応件数が信用できなくなり、
+ダッシュボードの指標として機能しなくなる。
+再オープン時は OPEN ではなく IN_PROGRESS に戻すことで、
+新規の問い合わせと区別している。
+
+**管理者はルールを迂回できる**
+
+操作ミスは必ず発生するため、管理者ロールは遷移ルールの検証を通らない。
+業務フローは制約で守り、例外は権限で解決する、という切り分けにしている。
