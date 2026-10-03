@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/session";
 import type { InquiryStatus, Prisma } from "@/generated/prisma/client";
@@ -48,7 +49,7 @@ export async function getInquiries(params: {
 	};
 }
 
-export async function getInquiryById(id: string) {
+export const getInquiryById = cache(async (id: string) => {
 	const session = await requireSession();
 
 	const inquiry = await prisma.inquiry.findUnique({
@@ -72,7 +73,7 @@ export async function getInquiryById(id: string) {
 	}
 
 	return inquiry;
-}
+});
 
 export async function getAssignableUsers() {
 	await requireSession();

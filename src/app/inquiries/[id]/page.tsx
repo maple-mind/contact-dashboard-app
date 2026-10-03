@@ -1,14 +1,29 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import {
-	INQUIRY_STATUS_LABELS,
-	INQUIRY_STATUS_VARIANTS,
-	PRIORITY_LABELS,
-} from "@/lib/labels";
+import { PRIORITY_LABELS } from "@/lib/labels";
 import { StatusChanger } from "@/components/status-changer";
 import { AssigneeChanger } from "@/components/assignee-changer";
 import { CommentForm } from "@/components/comment-form";
 import { getInquiryById, getAssignableUsers } from "@/data/inquiry";
+import type { Metadata } from "next";
+
+export async function generateMetadata({
+	params,
+}: {
+	params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+	const { id } = await params;
+	const inquiry = await getInquiryById(id);
+
+	if (!inquiry) {
+		return { title: "問い合わせが見つかりません" };
+	}
+
+	return {
+		title: inquiry.title,
+		description: inquiry.body.slice(0, 100),
+	};
+}
 
 export default async function InquiryDetailPage({
 	params,
@@ -35,14 +50,14 @@ export default async function InquiryDetailPage({
 			<h1 className="mt-4 mb-6 text-2xl font-bold">{inquiry.title}</h1>
 
 			<div className="grid gap-8 lg:grid-cols-[1fr_20rem]">
-				<section>
+				<section className="order-2 lg:order-1">
 					<h2 className="mb-2 font-medium">本文</h2>
 					<div className="rounded border p-4 text-sm whitespace-pre-wrap">
 						{inquiry.body}
 					</div>
 				</section>
 
-				<aside>
+				<aside className="order-1 lg:order-2">
 					<dl className="grid grid-cols-[6rem_1fr] gap-y-3 text-sm">
 						<dt className="text-muted-foreground">顧客</dt>
 						<dd>{inquiry.customer.name}</dd>
