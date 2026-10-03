@@ -7,6 +7,13 @@ import type { ActionResult } from "@/lib/types";
 
 const PER_PAGE = 20;
 
+function visibilityFilter(user: {
+	id: string;
+	role: string;
+}): Prisma.InquiryWhereInput {
+	return user.role === "ADMIN" ? {} : { assigneeId: user.id };
+}
+
 export async function getInquiries(params: {
 	status: InquiryStatus | undefined;
 	q: string;
@@ -18,7 +25,7 @@ export async function getInquiries(params: {
 	const { status, q, page, sort, order } = params;
 
 	const where: Prisma.InquiryWhereInput = {
-		...(session.user.role === "ADMIN" ? {} : { assigneeId: session.user.id }),
+		...visibilityFilter(session.user),
 		...(status ? { status } : {}),
 		...(q
 			? {
@@ -82,6 +89,29 @@ export async function getAssignableUsers() {
 		select: { id: true, name: true },
 		orderBy: { name: "asc" },
 	});
+}
+
+export async function getStatusSummary() {
+	const session = await requireSession();
+
+	const groups = await prisma.inquiry.groupBy({
+		by: ["status"],
+		where: visibilityFilter(session.user),
+		_count: { _all: true },
+	});
+
+	const summary: Record<InquiryStatus, number> = {
+		OPEN: 0,
+		IN_PROGRESS: 0,
+		PENDING: 0,
+		CLOSED: 0,
+	};
+
+	for (const group of groups) {
+		summary[group.status] = group._count._all;
+	}
+
+	return summary;
 }
 
 async function checkInquiryWriteAccess(inquiryId: string) {
@@ -150,7 +180,7 @@ export async function updateAssignee(
 		});
 
 		if (!user) {
-			return { ok: false as const, message: "担当者が見つかりません" };
+			return { ok: false, message: "担当者が見つかりません" };
 		}
 	}
 

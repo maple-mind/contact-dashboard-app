@@ -3,10 +3,11 @@ import { InquiryStatus, type Role } from "@/generated/prisma/enums";
 import { StatusFilter } from "@/components/status-filter";
 import { SearchInput } from "@/components/search-input";
 import { InquiryTable } from "@/components/inquiry-table";
-import { TableSkeleton } from "@/components/table-skeleton";
+import { TableSkeleton, SummarySkeleton } from "@/components/table-skeleton";
 import { requireSession } from "@/lib/session";
 import { SignOutButton } from "@/components/sign-out-button";
 import { ROLE_LABELS } from "@/lib/labels";
+import { StatusSummary } from "@/components/status-summary";
 
 const STATUS_VALUES = Object.values(InquiryStatus);
 
@@ -79,6 +80,10 @@ export default async function Home({
 						</p>
 					)}
 				</div>
+
+				<Suspense fallback={<SummarySkeleton />}>
+					<StatusSummary activeStatus={status} />
+				</Suspense>
 
 				<div className="mb-4 flex flex-wrap gap-4">
 					<SearchInput />

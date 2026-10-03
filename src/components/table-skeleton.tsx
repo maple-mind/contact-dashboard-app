@@ -12,3 +12,13 @@ export function TableSkeleton() {
 		</div>
 	);
 }
+
+export function SummarySkeleton() {
+	return (
+		<div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4">
+			{Array.from({ length: 4 }).map((_, i) => (
+				<Skeleton key={i} className="h-[88px] rounded-lg" />
+			))}
+		</div>
+	);
+}
