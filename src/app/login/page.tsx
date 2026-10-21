@@ -25,12 +25,11 @@ export default function LoginPage() {
 			}
 
 			router.push("/");
-			router.refresh();
 		});
 	}
 
 	return (
-		<main className="mx-auto flex min-h-screen w-full max-w-sm flex-col justify-center p-8">
+		<main className="mx-auto flex min-h-screen w-full max-w-sm flex-col p-8 pt-[25vh]">
 			<h1 className="mb-6 text-2xl font-bold">ログイン</h1>
 
 			<div className="space-y-4">
@@ -66,7 +65,12 @@ export default function LoginPage() {
 					</p>
 				)}
 
-				<Button onClick={handleSubmit} disabled={isPending} className="w-full">
+				<Button
+					onClick={handleSubmit}
+					disabled={isPending}
+					size="lg"
+					className="mt-2 h-10 w-full"
+				>
 					{isPending ? "ログイン中..." : "ログイン"}
 				</Button>
 			</div>
