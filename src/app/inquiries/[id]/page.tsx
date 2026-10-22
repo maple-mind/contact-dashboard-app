@@ -5,6 +5,7 @@ import { StatusChanger } from "@/components/status-changer";
 import { AssigneeChanger } from "@/components/assignee-changer";
 import { CommentForm } from "@/components/comment-form";
 import { getInquiryById, getAssignableUsers } from "@/data/inquiry";
+import { requireSession } from "@/lib/session";
 import type { Metadata } from "next";
 
 export async function generateMetadata({
@@ -32,7 +33,8 @@ export default async function InquiryDetailPage({
 }) {
 	const { id } = await params;
 
-	const [inquiry, users] = await Promise.all([
+	const [session, inquiry, users] = await Promise.all([
+		requireSession(),
 		getInquiryById(id),
 		getAssignableUsers(),
 	]);
@@ -67,6 +69,7 @@ export default async function InquiryDetailPage({
 							<StatusChanger
 								inquiryId={inquiry.id}
 								currentStatus={inquiry.status}
+								isAdmin={session.user.role === "ADMIN"}
 							/>
 						</dd>
 

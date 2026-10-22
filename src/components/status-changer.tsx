@@ -15,15 +15,20 @@ import {
 export function StatusChanger({
 	inquiryId,
 	currentStatus,
+	isAdmin,
 }: {
 	inquiryId: string;
 	currentStatus: InquiryStatus;
+	isAdmin: boolean;
 }) {
 	const [, startTransition] = useTransition();
 	const [error, setError] = useState<string | null>(null);
 	const [optimisticStatus, setOptimisticStatus] = useOptimistic(currentStatus);
 
-	const allowed = getAllowedTransitions(optimisticStatus);
+	// 管理者は遷移ルールを迂回できる
+	const allowed = isAdmin
+		? Object.values(InquiryStatus).filter((s) => s !== optimisticStatus)
+		: getAllowedTransitions(optimisticStatus);
 
 	function handleChange(value: string | null) {
 		if (!value) return;
