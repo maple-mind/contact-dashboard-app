@@ -9,7 +9,9 @@ export function CommentForm({ inquiryId }: { inquiryId: string }) {
 	const [error, setError] = useState<string | null>(null);
 	const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-	function handleSubmit() {
+	function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
+		event.preventDefault();
+
 		const body = textareaRef.current?.value ?? "";
 
 		setError(null);
@@ -28,8 +30,12 @@ export function CommentForm({ inquiryId }: { inquiryId: string }) {
 	}
 
 	return (
-		<div className="mt-4">
+		<form onSubmit={handleSubmit} className="mt-4">
+			<label htmlFor="comment-body" className="sr-only">
+				対応内容
+			</label>
 			<textarea
+				id="comment-body"
 				ref={textareaRef}
 				rows={4}
 				placeholder="対応内容を記録..."
@@ -44,10 +50,10 @@ export function CommentForm({ inquiryId }: { inquiryId: string }) {
 			)}
 
 			<div className="mt-2 flex justify-end">
-				<Button onClick={handleSubmit} disabled={isPending}>
+				<Button type="submit" disabled={isPending}>
 					{isPending ? "投稿中..." : "コメントを追加"}
 				</Button>
 			</div>
-		</div>
+		</form>
 	);
 }

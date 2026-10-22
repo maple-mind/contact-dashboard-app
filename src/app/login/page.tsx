@@ -13,7 +13,8 @@ export default function LoginPage() {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 
-	function handleSubmit() {
+	function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
+		event.preventDefault();
 		setError(null);
 
 		startTransition(async () => {
@@ -32,7 +33,7 @@ export default function LoginPage() {
 		<main className="mx-auto flex min-h-screen w-full max-w-sm flex-col p-8 pt-[25vh]">
 			<h1 className="mb-6 text-2xl font-bold">ログイン</h1>
 
-			<div className="space-y-4">
+			<form onSubmit={handleSubmit} className="space-y-4">
 				<div>
 					<label htmlFor="email" className="mb-1 block text-sm">
 						メールアドレス
@@ -66,14 +67,14 @@ export default function LoginPage() {
 				)}
 
 				<Button
-					onClick={handleSubmit}
+					type="submit"
 					disabled={isPending}
 					size="lg"
 					className="mt-2 h-10 w-full"
 				>
 					{isPending ? "ログイン中..." : "ログイン"}
 				</Button>
-			</div>
+			</form>
 		</main>
 	);
 }
