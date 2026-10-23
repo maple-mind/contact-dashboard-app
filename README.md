@@ -47,9 +47,40 @@ BtoB SaaS のカスタマーサポート業務を想定した管理画面です�
 - メール/パスワードによる認証
 - ロールによる権限制御
 
-## 画面
+### 画面
 
-<!-- スクリーンショットを2〜3枚。一覧と詳細 -->
+**一覧（管理者）**
+![問い合わせ一覧](docs/images/inquiry-list.png)
+
+**詳細**
+![問い合わせ詳細](docs/images/inquiry-detail.png)
+
+**一覧（担当者）** — 自分が担当する問い合わせのみ表示
+![担当者の一覧](docs/images/inquiry-list-member.png)
+
+## ローカルでの起動
+
+PostgreSQL（Neon など）が必要です。
+
+```bash
+npm install
+cp .env.example .env
+npx prisma migrate deploy
+npx prisma db seed
+npm run dev
+```
+
+`.env` には以下を設定します。
+
+| 変数                 | 内容                                                     |
+| -------------------- | -------------------------------------------------------- |
+| `DATABASE_URL`       | アプリが使う接続文字列（Neon の場合はプーリング接続）    |
+| `DIRECT_URL`         | マイグレーション・シードが使う直接接続の接続文字列       |
+| `BETTER_AUTH_SECRET` | `openssl rand -base64 32` などで生成したランダムな文字列 |
+| `BETTER_AUTH_URL`    | `http://localhost:3000`                                  |
+
+シードを実行すると既存のデータはすべて削除され、デモと同じアカウントで
+ログインできる状態になります。
 
 ## 設計判断
 
