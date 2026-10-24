@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signUp } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
@@ -88,6 +89,13 @@ export default function SignUpPage() {
 					{isPending ? "登録中..." : "登録"}
 				</Button>
 			</form>
+
+			<p className="text-muted-foreground mt-4 text-center text-sm">
+				アカウントをお持ちの方は
+				<Link href="/login" className="text-foreground underline">
+					ログイン
+				</Link>
+			</p>
 		</main>
 	);
 }
