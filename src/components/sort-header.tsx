@@ -3,12 +3,13 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { TableHead } from "./ui/table";
+import type { SortField } from "@/lib/inquiry-params";
 
 export function SortHeader({
 	field,
 	children,
 }: {
-	field: string;
+	field: SortField;
 	children: React.ReactNode;
 }) {
 	const router = useRouter();

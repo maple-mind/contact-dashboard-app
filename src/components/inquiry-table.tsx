@@ -19,8 +19,9 @@ import {
 	INQUIRY_STATUS_VARIANTS,
 	PRIORITY_LABELS,
 } from "@/lib/labels";
+import type { SortField, SortOrder } from "@/lib/inquiry-params";
 
-const SORT_FIELD_LABELS: Record<string, string> = {
+const SORT_FIELD_LABELS: Record<SortField, string> = {
 	createdAt: "受信日時",
 	title: "件名",
 	status: "ステータス",
@@ -38,8 +39,8 @@ export async function InquiryTable({
 	status: InquiryStatus | undefined;
 	q: string;
 	page: number;
-	sort: string;
-	order: "asc" | "desc";
+	sort: SortField;
+	order: SortOrder;
 	isAdmin: boolean;
 }) {
 	const { inquiries, total, totalPages, perPage } = await getInquiries({
@@ -82,7 +83,7 @@ export async function InquiryTable({
 			conditions.length > 0
 				? `絞り込み条件は${conditions.join("、")}`
 				: "絞り込みなし",
-			`${SORT_FIELD_LABELS[sort] ?? SORT_FIELD_LABELS.createdAt}の${
+			`${SORT_FIELD_LABELS[sort]}の${
 				order === "desc" ? "降順" : "昇順"
 			}で並べ替え`,
 			`全${total}件中${rangeStart}件目から${rangeEnd}件目を表示`,

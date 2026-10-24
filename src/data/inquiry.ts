@@ -4,6 +4,7 @@ import { requireSession } from "@/lib/session";
 import type { InquiryStatus, Prisma } from "@/generated/prisma/client";
 import { canTransition } from "@/lib/inquiry-status";
 import type { ActionResult } from "@/lib/types";
+import type { SortField, SortOrder } from "@/lib/inquiry-params";
 
 const PER_PAGE = 20;
 
@@ -18,8 +19,8 @@ export async function getInquiries(params: {
 	status: InquiryStatus | undefined;
 	q: string;
 	page: number;
-	sort: string;
-	order: "asc" | "desc";
+	sort: SortField;
+	order: SortOrder;
 }) {
 	const session = await requireSession();
 	const { status, q, page, sort, order } = params;
