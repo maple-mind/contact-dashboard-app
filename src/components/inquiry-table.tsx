@@ -19,7 +19,11 @@ import {
 	INQUIRY_STATUS_VARIANTS,
 	PRIORITY_LABELS,
 } from "@/lib/labels";
-import type { SortField, SortOrder } from "@/lib/inquiry-params";
+import {
+	buildListQuery,
+	type SortField,
+	type SortOrder,
+} from "@/lib/inquiry-params";
 
 const SORT_FIELD_LABELS: Record<SortField, string> = {
 	createdAt: "受信日時",
@@ -62,12 +66,18 @@ export async function InquiryTable({
 		return (
 			<div className="rounded border border-dashed p-12 text-center">
 				<p className="mb-4 font-medium">このページは存在しません</p>
-				<Link href="/" className="text-sm underline">
+				<Link
+					href={`/${buildListQuery({ status, q, sort, order })}`}
+					className="text-sm underline"
+				>
 					1ページ目に戻る
 				</Link>
 			</div>
 		);
 	}
+
+	// 詳細ページから同じ絞り込み・ページの一覧に戻れるよう、一覧の状態を引き継ぐ
+	const listQuery = buildListQuery({ status, q, page, sort, order });
 
 	const rangeStart = (page - 1) * perPage + 1;
 	const rangeEnd = Math.min(page * perPage, total);
@@ -116,7 +126,7 @@ export async function InquiryTable({
 						<TableRow key={inquiry.id}>
 							<TableCell>
 								<Link
-									href={`/inquiries/${inquiry.id}`}
+									href={`/inquiries/${inquiry.id}${listQuery}`}
 									className="hover:underline"
 								>
 									{inquiry.title}

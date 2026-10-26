@@ -6,6 +6,7 @@ import { AssigneeChanger } from "@/components/assignee-changer";
 import { CommentForm } from "@/components/comment-form";
 import { getInquiryById, getAssignableUsers } from "@/data/inquiry";
 import { requireSession } from "@/lib/session";
+import { buildListQuery, parseListParams } from "@/lib/inquiry-params";
 import type { Metadata } from "next";
 
 export async function generateMetadata({
@@ -28,10 +29,13 @@ export async function generateMetadata({
 
 export default async function InquiryDetailPage({
 	params,
+	searchParams,
 }: {
 	params: Promise<{ id: string }>;
+	searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
 	const { id } = await params;
+	const backHref = `/${buildListQuery(parseListParams(await searchParams))}`;
 
 	const [session, inquiry, users] = await Promise.all([
 		requireSession(),
@@ -45,7 +49,10 @@ export default async function InquiryDetailPage({
 
 	return (
 		<main className="mx-auto w-full max-w-[1200px] p-8">
-			<Link href="/" className="text-muted-foreground text-sm hover:underline">
+			<Link
+				href={backHref}
+				className="text-muted-foreground text-sm hover:underline"
+			>
 				← 一覧に戻る
 			</Link>
 

@@ -3,11 +3,22 @@ import { InquiryStatus } from "@/generated/prisma/enums";
 import { INQUIRY_STATUS_LABELS } from "@/lib/labels";
 import { getStatusSummary } from "@/data/inquiry";
 import { cn } from "@/lib/utils";
+import {
+	buildListQuery,
+	type SortField,
+	type SortOrder,
+} from "@/lib/inquiry-params";
 
 export async function StatusSummary({
 	activeStatus,
+	q,
+	sort,
+	order,
 }: {
 	activeStatus: InquiryStatus | undefined;
+	q: string;
+	sort: SortField;
+	order: SortOrder;
 }) {
 	const summary = await getStatusSummary();
 
@@ -19,7 +30,12 @@ export async function StatusSummary({
 				return (
 					<li key={status}>
 						<Link
-							href={isActive ? "/" : `/?status=${status}`}
+							href={`/${buildListQuery({
+								status: isActive ? undefined : status,
+								q,
+								sort,
+								order,
+							})}`}
 							aria-current={isActive ? "true" : undefined}
 							className={cn(
 								"focus-visible:ring-ring/50 block rounded-lg border p-4 focus-visible:ring-3 focus-visible:outline-none",

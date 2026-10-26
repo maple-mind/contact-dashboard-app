@@ -8,12 +8,7 @@ import { requireSession } from "@/lib/session";
 import { SignOutButton } from "@/components/sign-out-button";
 import { ROLE_LABELS } from "@/lib/labels";
 import { StatusSummary } from "@/components/status-summary";
-import {
-	parseOrder,
-	parsePage,
-	parseSort,
-	parseStatus,
-} from "@/lib/inquiry-params";
+import { parseListParams } from "@/lib/inquiry-params";
 
 export default async function Home({
 	searchParams,
@@ -22,12 +17,7 @@ export default async function Home({
 }) {
 	const session = await requireSession();
 
-	const params = await searchParams;
-	const status = parseStatus(params.status);
-	const q = typeof params.q === "string" ? params.q.trim() : "";
-	const page = parsePage(params.page);
-	const sort = parseSort(params.sort);
-	const order = parseOrder(params.order);
+	const { status, q, page, sort, order } = parseListParams(await searchParams);
 
 	return (
 		<>
@@ -62,7 +52,12 @@ export default async function Home({
 				</div>
 
 				<Suspense fallback={<SummarySkeleton />}>
-					<StatusSummary activeStatus={status} />
+					<StatusSummary
+						activeStatus={status}
+						q={q}
+						sort={sort}
+						order={order}
+					/>
 				</Suspense>
 
 				<div className="mb-4 flex flex-wrap gap-4">
