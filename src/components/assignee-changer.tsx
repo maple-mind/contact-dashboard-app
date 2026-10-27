@@ -1,6 +1,8 @@
 "use client";
 
 import { useOptimistic, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { updateInquiryAssignee } from "@/app/actions/inquiry";
 import {
 	Select,
@@ -15,11 +17,14 @@ export function AssigneeChanger({
 	inquiryId,
 	currentAssigneeId,
 	users,
+	listHref,
 }: {
 	inquiryId: string;
 	currentAssigneeId: string | null;
 	users: { id: string; name: string }[];
+	listHref: string;
 }) {
+	const router = useRouter();
 	const [, startTransition] = useTransition();
 	const [error, setError] = useState<string | null>(null);
 	const [optimisticAssigneeId, setOptimisticAssigneeId] =
@@ -42,6 +47,14 @@ export function AssigneeChanger({
 
 			if (!result.ok) {
 				setError(result.message);
+				return;
+			}
+
+			if (!result.canStillView) {
+				toast.success(
+					"担当を変更しました。この問い合わせは一覧に表示されなくなります",
+				);
+				router.push(listHref);
 			}
 		});
 	}

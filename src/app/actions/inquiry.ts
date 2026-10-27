@@ -29,10 +29,12 @@ export async function updateInquiryStatus(
 export async function updateInquiryAssignee(
 	inquiryId: string,
 	assigneeId: string | null,
-): Promise<ActionResult> {
+): Promise<inquiryData.UpdateAssigneeResult> {
 	const result = await inquiryData.updateAssignee(inquiryId, assigneeId);
 
-	if (result.ok) {
+	// 担当が変わり閲覧できなくなった場合は再検証しない
+	// 表示中の詳細ページが再描画されて 404 になるため、クライアント側で一覧へ移動させる
+	if (result.ok && result.canStillView) {
 		revalidatePath(`/inquiries/${inquiryId}`);
 		revalidatePath("/");
 	}

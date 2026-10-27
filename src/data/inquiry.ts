@@ -164,10 +164,13 @@ export async function updateStatus(
 	return { ok: true };
 }
 
+export type UpdateAssigneeResult =
+	{ ok: true; canStillView: boolean } | { ok: false; message: string };
+
 export async function updateAssignee(
 	inquiryId: string,
 	assigneeId: string | null,
-): Promise<ActionResult> {
+): Promise<UpdateAssigneeResult> {
 	const access = await checkInquiryWriteAccess(inquiryId);
 
 	if (!access.ok) {
@@ -190,7 +193,12 @@ export async function updateAssignee(
 		data: { assigneeId },
 	});
 
-	return { ok: true };
+	// 担当者が自分以外に引き継いだ場合、この問い合わせは閲覧できなくなる
+	const canStillView =
+		access.session.user.role === "ADMIN" ||
+		assigneeId === access.session.user.id;
+
+	return { ok: true, canStillView };
 }
 
 export async function addComment(

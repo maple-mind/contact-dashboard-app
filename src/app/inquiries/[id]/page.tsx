@@ -89,6 +89,7 @@ export default async function InquiryDetailPage({
 								inquiryId={inquiry.id}
 								currentAssigneeId={inquiry.assigneeId}
 								users={users}
+								listHref={backHref}
 							/>
 						</dd>
 
