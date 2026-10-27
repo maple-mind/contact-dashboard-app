@@ -4,6 +4,7 @@ import { PRIORITY_LABELS } from "@/lib/labels";
 import { StatusChanger } from "@/components/status-changer";
 import { AssigneeChanger } from "@/components/assignee-changer";
 import { CommentForm } from "@/components/comment-form";
+import { InquiryTimeline } from "@/components/inquiry-timeline";
 import { getInquiryById, getAssignableUsers } from "@/data/inquiry";
 import { requireSession } from "@/lib/session";
 import { buildListQuery, parseListParams } from "@/lib/inquiry-params";
@@ -114,31 +115,10 @@ export default async function InquiryDetailPage({
 
 			<section className="mt-8">
 				<h2 className="mb-2 font-medium">
-					対応履歴（{inquiry.comments.length}件）
+					対応履歴（{inquiry.comments.length + inquiry.events.length}件）
 				</h2>
 
-				{inquiry.comments.length === 0 ? (
-					<p className="text-muted-foreground text-sm">
-						まだ対応履歴がありません
-					</p>
-				) : (
-					<ul className="space-y-3">
-						{inquiry.comments.map((comment) => (
-							<li key={comment.id} className="rounded border p-3 text-sm">
-								<div className="mb-1 flex items-baseline gap-2">
-									<span className="font-medium">{comment.author.name}</span>
-									<span className="text-muted-foreground text-xs">
-										{comment.createdAt.toLocaleString("ja-JP", {
-											dateStyle: "medium",
-											timeStyle: "short",
-										})}
-									</span>
-								</div>
-								<p className="whitespace-pre-wrap">{comment.body}</p>
-							</li>
-						))}
-					</ul>
-				)}
+				<InquiryTimeline comments={inquiry.comments} events={inquiry.events} />
 
 				<CommentForm inquiryId={inquiry.id} />
 			</section>

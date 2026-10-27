@@ -30,6 +30,11 @@ enum Priority {
 	HIGH
 }
 
+enum InquiryEventType {
+	STATUS_CHANGED
+	ASSIGNEE_CHANGED
+}
+
 model User {
 	id            String    @id @default(cuid())
 	name          String
@@ -44,6 +49,10 @@ model User {
 	accounts      Account[]
 	inquiries     Inquiry[]
 	comments      Comment[]
+
+	actedEvents      InquiryEvent[] @relation("InquiryEventActor")
+	unassignedEvents InquiryEvent[] @relation("InquiryEventFromAssignee")
+	assignedEvents   InquiryEvent[] @relation("InquiryEventToAssignee")
 
 	@@unique([email])
 	@@map("user")
@@ -72,6 +81,7 @@ model Inquiry {
 	assignee   User?         @relation(fields: [assigneeId], references: [id])
 
 	comments Comment[]
+	events   InquiryEvent[]
 
 	@@index([status, createdAt])
 	@@index([assigneeId])
@@ -88,6 +98,30 @@ model Comment {
 
 	authorId  String
 	author    User     @relation(fields: [authorId], references: [id])
+
+	@@index([inquiryId, createdAt])
+}
+
+model InquiryEvent {
+	id        String           @id @default(cuid())
+	type      InquiryEventType
+	createdAt DateTime         @default(now())
+
+	inquiryId String
+	inquiry   Inquiry          @relation(fields: [inquiryId], references: [id], onDelete: Cascade)
+
+	actorId   String
+	actor     User             @relation("InquiryEventActor", fields: [actorId], references: [id])
+
+	// STATUS_CHANGED のときのみ
+	fromStatus InquiryStatus?
+	toStatus   InquiryStatus?
+
+	// ASSIGNEE_CHANGED のときのみ
+	fromAssigneeId String?
+	fromAssignee   User?       @relation("InquiryEventFromAssignee", fields: [fromAssigneeId], references: [id])
+	toAssigneeId   String?
+	toAssignee     User?       @relation("InquiryEventToAssignee", fields: [toAssigneeId], references: [id])
 
 	@@index([inquiryId, createdAt])
 }

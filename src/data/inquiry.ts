@@ -69,6 +69,14 @@ export const getInquiryById = cache(async (id: string) => {
 				include: { author: true },
 				orderBy: { createdAt: "asc" },
 			},
+			events: {
+				include: {
+					actor: { select: { name: true } },
+					fromAssignee: { select: { name: true } },
+					toAssignee: { select: { name: true } },
+				},
+				orderBy: { createdAt: "asc" },
+			},
 		},
 	});
 
@@ -156,10 +164,25 @@ export async function updateStatus(
 		return { ok: false, message: "このステータスには変更できません" };
 	}
 
-	await prisma.inquiry.update({
-		where: { id: inquiryId },
-		data: { status: nextStatus },
-	});
+	if (access.inquiry.status === nextStatus) {
+		return { ok: true };
+	}
+
+	await prisma.$transaction([
+		prisma.inquiry.update({
+			where: { id: inquiryId },
+			data: { status: nextStatus },
+		}),
+		prisma.inquiryEvent.create({
+			data: {
+				type: "STATUS_CHANGED",
+				inquiryId,
+				actorId: access.session.user.id,
+				fromStatus: access.inquiry.status,
+				toStatus: nextStatus,
+			},
+		}),
+	]);
 
 	return { ok: true };
 }
@@ -188,15 +211,30 @@ export async function updateAssignee(
 		}
 	}
 
-	await prisma.inquiry.update({
-		where: { id: inquiryId },
-		data: { assigneeId },
-	});
-
 	// 担当者が自分以外に引き継いだ場合、この問い合わせは閲覧できなくなる
 	const canStillView =
 		access.session.user.role === "ADMIN" ||
 		assigneeId === access.session.user.id;
+
+	if (access.inquiry.assigneeId === assigneeId) {
+		return { ok: true, canStillView };
+	}
+
+	await prisma.$transaction([
+		prisma.inquiry.update({
+			where: { id: inquiryId },
+			data: { assigneeId },
+		}),
+		prisma.inquiryEvent.create({
+			data: {
+				type: "ASSIGNEE_CHANGED",
+				inquiryId,
+				actorId: access.session.user.id,
+				fromAssigneeId: access.inquiry.assigneeId,
+				toAssigneeId: assigneeId,
+			},
+		}),
+	]);
 
 	return { ok: true, canStillView };
 }
