@@ -11,6 +11,13 @@ export const SORTABLE_FIELDS = [
 export type SortField = (typeof SORTABLE_FIELDS)[number];
 export type SortOrder = "asc" | "desc";
 
+export const DEFAULT_SORT_ORDERS: Record<SortField, SortOrder> = {
+	createdAt: "desc",
+	title: "asc",
+	status: "asc",
+	priority: "desc",
+};
+
 type ParamValue = string | string[] | undefined;
 
 export function parseStatus(value: ParamValue): InquiryStatus | undefined {

@@ -18,19 +18,14 @@ import {
 	INQUIRY_STATUS_LABELS,
 	INQUIRY_STATUS_VARIANTS,
 	PRIORITY_LABELS,
+	SORT_FIELD_LABELS,
+	SORT_ORDER_LABELS,
 } from "@/lib/labels";
 import {
 	buildListQuery,
 	type SortField,
 	type SortOrder,
 } from "@/lib/inquiry-params";
-
-const SORT_FIELD_LABELS: Record<SortField, string> = {
-	createdAt: "受信日時",
-	title: "件名",
-	status: "ステータス",
-	priority: "優先度",
-};
 
 export async function InquiryTable({
 	status,
@@ -93,18 +88,19 @@ export async function InquiryTable({
 			conditions.length > 0
 				? `絞り込み条件は${conditions.join("、")}`
 				: "絞り込みなし",
-			`${SORT_FIELD_LABELS[sort]}の${
-				order === "desc" ? "降順" : "昇順"
-			}で並べ替え`,
+			`並び順は${SORT_FIELD_LABELS[sort]}の${SORT_ORDER_LABELS[sort][order]}`,
 			`全${total}件中${rangeStart}件目から${rangeEnd}件目を表示`,
 			`全${totalPages}ページ中${page}ページ目`,
 		].join("。") + "。";
 
 	return (
 		<>
-			<p className="mb-4 text-sm">
+			<p className="mb-4 flex flex-wrap gap-x-4 text-sm">
 				<span aria-hidden="true">
 					{total}件中 {rangeStart}〜{rangeEnd}件
+				</span>
+				<span aria-hidden="true" className="text-muted-foreground">
+					並び順：{SORT_FIELD_LABELS[sort]}（{SORT_ORDER_LABELS[sort][order]}）
 				</span>
 				<span className="sr-only">{description}</span>
 			</p>
