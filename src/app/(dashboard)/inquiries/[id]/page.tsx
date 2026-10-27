@@ -49,7 +49,7 @@ export default async function InquiryDetailPage({
 	}
 
 	return (
-		<main className="mx-auto w-full max-w-[1200px] p-8">
+		<>
 			<Link
 				href={backHref}
 				className="text-muted-foreground text-sm hover:underline"
@@ -122,6 +122,6 @@ export default async function InquiryDetailPage({
 
 				<CommentForm inquiryId={inquiry.id} />
 			</section>
-		</main>
+		</>
 	);
 }
