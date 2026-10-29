@@ -4,6 +4,7 @@ import { EmptyState } from "@/components/empty-state";
 import Link from "next/link";
 import type { InquiryStatus } from "@/generated/prisma/enums";
 import { getInquiries } from "@/data/inquiry";
+import { formatDate } from "@/lib/format";
 import {
 	Table,
 	TableBody,
@@ -149,7 +150,7 @@ export async function InquiryTable({
 								)}
 							</TableCell>
 							<TableCell>
-								{inquiry.createdAt.toLocaleDateString("ja-JP")}
+								{formatDate(inquiry.createdAt)}
 							</TableCell>
 						</TableRow>
 					))}

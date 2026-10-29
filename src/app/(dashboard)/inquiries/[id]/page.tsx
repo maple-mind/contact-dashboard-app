@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { PRIORITY_LABELS } from "@/lib/labels";
+import { formatDateTime } from "@/lib/format";
 import { StatusChanger } from "@/components/status-changer";
 import { AssigneeChanger } from "@/components/assignee-changer";
 import { CommentForm } from "@/components/comment-form";
@@ -96,18 +97,12 @@ export default async function InquiryDetailPage({
 
 						<dt className="text-muted-foreground">受信日時</dt>
 						<dd>
-							{inquiry.createdAt.toLocaleString("ja-JP", {
-								dateStyle: "medium",
-								timeStyle: "short",
-							})}
+							{formatDateTime(inquiry.createdAt)}
 						</dd>
 
 						<dt className="text-muted-foreground">最終更新</dt>
 						<dd>
-							{inquiry.updatedAt.toLocaleString("ja-JP", {
-								dateStyle: "medium",
-								timeStyle: "short",
-							})}
+							{formatDateTime(inquiry.updatedAt)}
 						</dd>
 					</dl>
 				</aside>

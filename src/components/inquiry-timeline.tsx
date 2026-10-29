@@ -1,4 +1,5 @@
 import type { getInquiryById } from "@/data/inquiry";
+import { formatDateTime } from "@/lib/format";
 import { INQUIRY_STATUS_LABELS } from "@/lib/labels";
 
 type Inquiry = NonNullable<Awaited<ReturnType<typeof getInquiryById>>>;
@@ -8,13 +9,6 @@ type InquiryEvent = Inquiry["events"][number];
 type TimelineItem =
 	| { kind: "comment"; createdAt: Date; comment: InquiryComment }
 	| { kind: "event"; createdAt: Date; event: InquiryEvent };
-
-function formatDateTime(date: Date) {
-	return date.toLocaleString("ja-JP", {
-		dateStyle: "medium",
-		timeStyle: "short",
-	});
-}
 
 function describeEvent(event: InquiryEvent): string {
 	switch (event.type) {
